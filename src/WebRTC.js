@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore as firestore } from  "firebase/firestore";
+import { getFirestore, collection, getDocs } from  "firebase/firestore/lite";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -16,7 +16,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
 const configuration = {
   iceServers: [
@@ -39,23 +39,37 @@ let roomId = null;
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
-export async function createRoom() {
-  // document.querySelector('#createBtn').disabled = true;
-  // document.querySelector('#joinBtn').disabled = true;
-  const db = firestore();
-  const roomRef = await db.collection('rooms').doc();
+export async function openUserMedia(localVideo, remoteVideo) {
+  console.log("##### Supported", navigator.mediaDevices.getSupportedConstraints().echoCancellation);
+  const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+  stream.getTracks().forEach(async track => {
+    await track.applyConstraints({ echoCancellation: true });
+    console.log("#### Constraints =", track.getConstraints());
+  });
+  localVideo.current.srcObject = stream;
+  remoteVideo.current.srcObject = new MediaStream();
+}
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
+export async function createRoom(localVideo) {
+  const db = getFirestore(app);
+  const roomCol = collection(db, 'rooms');
+  const roomRef = await getDocs(roomCol);
 
   console.log('Create PeerConnection with configuration: ', configuration);
   peerConnection = new RTCPeerConnection(configuration);
 
   registerPeerConnectionListeners();
 
+  const localStream = localVideo.current.srcObject;
   localStream.getTracks().forEach(track => {
     peerConnection.addTrack(track, localStream);
   });
 
   // Code for collecting ICE candidates below
-  const callerCandidatesCollection = roomRef.collection('callerCandidates');
+  const callerCandidatesCollection = collection(db, 'callerCandidates');
 
   peerConnection.addEventListener('icecandidate', event => {
     if (!event.candidate) {
@@ -138,7 +152,7 @@ export function joinRoom() {
 /////////////////////////////////////////////////////////////////////
 
 export async function joinRoomById(roomId) {
-  const db = firestore();
+  const db = getFirestore(app);
   const roomRef = db.collection('rooms').doc(`${roomId}`);
   const roomSnapshot = await roomRef.get();
   console.log('Got room:', roomSnapshot.exists);
@@ -205,33 +219,6 @@ export async function joinRoomById(roomId) {
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
-export async function openUserMedia(localVideo, remoteVideo) {
-
-  console.log("##### Supported", navigator.mediaDevices.getSupportedConstraints().echoCancellation);
-
-  const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-
-  stream.getTracks().forEach(async track => {
-    await track.applyConstraints({ echoCancellation: true });
-    console.log("#### Constraints =", track.getConstraints());
-  });
-  
-
-  // document.querySelector('#localVideo').srcObject = stream;
-  localVideo.current.srcObject = stream;
-  remoteVideo.current.srcObject = new MediaStream();
-  // document.querySelector('#remoteVideo').srcObject = remoteStream;
-
-  // console.log('Stream:', document.querySelector('#localVideo').srcObject);
-  // document.querySelector('#cameraBtn').disabled = true;
-  // document.querySelector('#joinBtn').disabled = false;
-  // document.querySelector('#createBtn').disabled = false;
-  // document.querySelector('#hangupBtn').disabled = false;
-}
-
-/////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////
-
 export async function hangUp(e) {
   
   localStream.tracks.forEach(track => track.stop());
@@ -254,7 +241,7 @@ export async function hangUp(e) {
 
   // Delete room on hangup
   if (roomId) {
-    const db = firestore();
+    const db = getFirestore(app);
     const roomRef = db.collection('rooms').doc(roomId);
     const calleeCandidates = await roomRef.collection('calleeCandidates').get();
     calleeCandidates.forEach(async candidate => {

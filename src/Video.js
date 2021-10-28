@@ -1,11 +1,11 @@
-import { openUserMedia } from "./WebRTC";
+import { openUserMedia, createRoom } from "./WebRTC";
 import { useState, useRef } from "react"
 
 const Video = () => {
-    const [mediaBtn, setMediaBtn] = useState(false);
-    const [createBtn, setCreateBtn] = useState(true);
-    const [joinBtn, setJoinBtn] = useState(true);
-    const [hangupBtn, setHangupBtn] = useState(true);
+    const [mediaBtn, disableMediaBtn] = useState(false);
+    const [createBtn, disableCreateBtn] = useState(true);
+    const [joinBtn, disableJoinBtn] = useState(true);
+    const [hangupBtn, disableHangupBtn] = useState(true);
     const localVideo = useRef(null);
     const remoteVideo = useRef(null);
 
@@ -15,11 +15,17 @@ const Video = () => {
       <div id="buttons">
         <button disabled={mediaBtn} onClick={ evt => {
             openUserMedia(localVideo, remoteVideo);
-            setMediaBtn(true);
+            disableMediaBtn(true);
+            disableCreateBtn(false);
+            disableJoinBtn(false);
         }}>
           <span>Open camera & microphone</span>
         </button>
-        <button disabled={createBtn}>
+        <button disabled={createBtn} onClick={ evt => {
+            createRoom(localVideo);
+            disableCreateBtn(true);
+            disableJoinBtn(true);
+        }}>
           <span>Create room</span>
         </button>
         <button disabled={joinBtn}>
