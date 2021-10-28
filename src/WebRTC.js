@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, setDoc } from  "firebase/firestore/lite";
+import { getFirestore, collection, addDoc, onSnapshot } from  "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -106,7 +106,7 @@ export async function createRoom(localVideo) {
   });
 
   // Listening for remote session description below
-  roomRef.onSnapshot(async snapshot => {
+  onSnapshot(roomRef, async snapshot => {
     const data = snapshot.data();
     if (!peerConnection.currentRemoteDescription && data && data.answer) {
       console.log('Got remote description: ', data.answer);
@@ -117,7 +117,8 @@ export async function createRoom(localVideo) {
   // Listening for remote session description above
 
   // Listen for remote ICE candidates below
-  roomRef.collection('calleeCandidates').onSnapshot(snapshot => {
+  const calleeCandidates = collection(roomRef, 'calleeCandidates');
+  onSnapshot(calleeCandidates, snapshot => {
     snapshot.docChanges().forEach(async change => {
       if (change.type === 'added') {
         let data = change.doc.data();
