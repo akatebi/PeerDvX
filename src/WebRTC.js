@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs } from  "firebase/firestore/lite";
+import { getFirestore, collection, addDoc, setDoc } from  "firebase/firestore/lite";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -56,7 +56,6 @@ export async function openUserMedia(localVideo, remoteVideo) {
 export async function createRoom(localVideo) {
   const db = getFirestore(app);
   const roomCol = collection(db, 'rooms');
-  const roomRef = await getDocs(roomCol);
 
   console.log('Create PeerConnection with configuration: ', configuration);
   peerConnection = new RTCPeerConnection(configuration);
@@ -77,7 +76,7 @@ export async function createRoom(localVideo) {
       return;
     }
     console.log('Got candidate: ', event.candidate);
-    callerCandidatesCollection.add(event.candidate.toJSON());
+    addDoc(callerCandidatesCollection, event.candidate.toJSON());
   });
   // Code for collecting ICE candidates above
 
@@ -92,7 +91,7 @@ export async function createRoom(localVideo) {
       sdp: offer.sdp,
     },
   };
-  await roomRef.set(roomWithOffer);
+  const roomRef = await addDoc(roomCol, roomWithOffer);
   roomId = roomRef.id;
   console.log(`New room created with SDP offer. Room ID: ${roomRef.id}`);
   // document.querySelector('#currentRoom').innerText = `Current room is ${roomRef.id} - You are the caller!`;
