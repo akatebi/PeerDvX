@@ -232,10 +232,8 @@ export async function openUserMedia(e) {
 /////////////////////////////////////////////////////////////////////
 
 export async function hangUp(e) {
-  const tracks = // document.querySelector('#localVideo').srcObject.getTracks();
-  tracks.forEach(track => {
-    track.stop();
-  });
+  
+  localStream.tracks.forEach(track => track.stop());
 
   if (remoteStream) {
     remoteStream.getTracks().forEach(track => track.stop());
