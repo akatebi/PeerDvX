@@ -1,4 +1,4 @@
-import { openUserMedia, createRoom } from "./WebRTC";
+import { openUserMedia, createRoom, joinRoom, hangUp } from "./WebRTC";
 import { useState, useRef } from "react"
 
 const Video = () => {
@@ -6,6 +6,7 @@ const Video = () => {
     const [createBtn, disableCreateBtn] = useState(true);
     const [joinBtn, disableJoinBtn] = useState(true);
     const [hangupBtn, disableHangupBtn] = useState(true);
+    const [roomId, setRoomId] = useState(null);
     const localVideo = useRef(null);
     const remoteVideo = useRef(null);
 
@@ -21,22 +22,26 @@ const Video = () => {
         }}>
           <span>Open camera & microphone</span>
         </button>
-        <button disabled={createBtn} onClick={ evt => {
-            createRoom(localVideo);
-            disableCreateBtn(true);
-            disableJoinBtn(true);
+        <button disabled={createBtn} onClick={ async evt => {
+          disableCreateBtn(true);
+          disableJoinBtn(true);
+          disableHangupBtn(false);
+          setRoomId(await createRoom(localVideo));
         }}>
           <span>Create room</span>
         </button>
         <button disabled={joinBtn}>
           <span>Join room</span>
         </button>
-        <button disabled={hangupBtn}>
+        <button disabled={hangupBtn} onClick={
+          evt => {
+            hangUp(localVideo, remoteVideo, roomId);
+        }}>
           <span>Hangup</span>
         </button>
       </div>
       <div>
-        <span id="currentRoom"></span>
+        {roomId && <span>{`Current room is ${roomId} - You are the caller!`}</span>}
       </div>
       <div id="videos">
         <video ref={localVideo} muted autoPlay playsInline></video>

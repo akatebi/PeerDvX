@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, onSnapshot } from  "firebase/firestore";
+import { getFirestore, collection, addDoc, onSnapshot, getDoc } from  "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -34,7 +34,6 @@ let peerConnection = null;
 let localStream = null;
 let remoteStream = null;
 let roomDialog = null;
-let roomId = null;
 
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -92,9 +91,8 @@ export async function createRoom(localVideo) {
     },
   };
   const roomRef = await addDoc(roomCol, roomWithOffer);
-  roomId = roomRef.id;
+  const roomId = roomRef.id;
   console.log(`New room created with SDP offer. Room ID: ${roomRef.id}`);
-  // document.querySelector('#currentRoom').innerText = `Current room is ${roomRef.id} - You are the caller!`;
   // Code for creating a room above
 
   peerConnection.addEventListener('track', event => {
@@ -128,6 +126,48 @@ export async function createRoom(localVideo) {
     });
   });
   // Listen for remote ICE candidates above
+
+  return roomId;
+}
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
+export async function hangUp(localVideo, remoteVideo, roomId) {
+  
+  const localStream = localVideo.current.srcObject;
+  const remoteStream = localVideo.current.srcObject;
+
+  localStream.getTracks().forEach(track => track.stop());
+
+  if (remoteStream) {
+    remoteStream.getTracks().forEach(track => track.stop());
+  }
+
+  if (peerConnection) {
+    peerConnection.close();
+  }
+
+  localVideo.current.srcObject = null;
+  remoteVideo.current.srcObject = null;
+
+  // Delete room on hangup
+  if (roomId) {
+    const db = getFirestore(app);
+    const roomCol = collection(db, 'rooms');
+    const roomRef = getDoc(roomCol, roomId);
+    const calleeCandidates = await collection(roomRef, 'calleeCandidates').getDoc();
+    calleeCandidates.forEach(async candidate => {
+      await candidate.ref.delete();
+    });
+    const callerCandidates = await collection(roomRef, 'callerCandidates').getDoc();
+    callerCandidates.forEach(async candidate => {
+      await candidate.ref.delete();
+    });
+    await roomRef.delete();
+  }
+
+  // document.location.reload(true);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -214,47 +254,6 @@ export async function joinRoomById(roomId) {
     });
     // Listening for remote ICE candidates above
   }
-}
-
-/////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////
-
-export async function hangUp(e) {
-  
-  localStream.tracks.forEach(track => track.stop());
-
-  if (remoteStream) {
-    remoteStream.getTracks().forEach(track => track.stop());
-  }
-
-  if (peerConnection) {
-    peerConnection.close();
-  }
-
-  // document.querySelector('#localVideo').srcObject = null;
-  // document.querySelector('#remoteVideo').srcObject = null;
-  // document.querySelector('#cameraBtn').disabled = false;
-  // document.querySelector('#joinBtn').disabled = true;
-  // document.querySelector('#createBtn').disabled = true;
-  // document.querySelector('#hangupBtn').disabled = true;
-  // document.querySelector('#currentRoom').innerText = '';
-
-  // Delete room on hangup
-  if (roomId) {
-    const db = getFirestore(app);
-    const roomRef = db.collection('rooms').doc(roomId);
-    const calleeCandidates = await roomRef.collection('calleeCandidates').get();
-    calleeCandidates.forEach(async candidate => {
-      await candidate.ref.delete();
-    });
-    const callerCandidates = await roomRef.collection('callerCandidates').get();
-    callerCandidates.forEach(async candidate => {
-      await candidate.ref.delete();
-    });
-    await roomRef.delete();
-  }
-
-  // document.location.reload(true);
 }
 
 /////////////////////////////////////////////////////////////////////
