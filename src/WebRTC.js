@@ -1,5 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
+import { getFirestore as firestore } from  "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -15,7 +16,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const firebase = initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);
 
 const configuration = {
   iceServers: [
@@ -41,7 +42,7 @@ let roomId = null;
 export async function createRoom() {
   // document.querySelector('#createBtn').disabled = true;
   // document.querySelector('#joinBtn').disabled = true;
-  const db = firebase.firestore();
+  const db = firestore();
   const roomRef = await db.collection('rooms').doc();
 
   console.log('Create PeerConnection with configuration: ', configuration);
@@ -137,7 +138,7 @@ export function joinRoom() {
 /////////////////////////////////////////////////////////////////////
 
 export async function joinRoomById(roomId) {
-  const db = firebase.firestore();
+  const db = firestore();
   const roomRef = db.collection('rooms').doc(`${roomId}`);
   const roomSnapshot = await roomRef.get();
   console.log('Got room:', roomSnapshot.exists);
@@ -204,7 +205,7 @@ export async function joinRoomById(roomId) {
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
-export async function openUserMedia(e) {
+export async function openUserMedia(localVideo, remoteVideo) {
 
   console.log("##### Supported", navigator.mediaDevices.getSupportedConstraints().echoCancellation);
 
@@ -217,8 +218,8 @@ export async function openUserMedia(e) {
   
 
   // document.querySelector('#localVideo').srcObject = stream;
-  localStream = stream;
-  remoteStream = new MediaStream();
+  localVideo.current.srcObject = stream;
+  remoteVideo.current.srcObject = new MediaStream();
   // document.querySelector('#remoteVideo').srcObject = remoteStream;
 
   // console.log('Stream:', document.querySelector('#localVideo').srcObject);
@@ -253,7 +254,7 @@ export async function hangUp(e) {
 
   // Delete room on hangup
   if (roomId) {
-    const db = firebase.firestore();
+    const db = firestore();
     const roomRef = db.collection('rooms').doc(roomId);
     const calleeCandidates = await roomRef.collection('calleeCandidates').get();
     calleeCandidates.forEach(async candidate => {

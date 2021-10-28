@@ -1,22 +1,31 @@
 import { openUserMedia } from "./WebRTC";
-
+import { useState, useRef } from "react"
 
 const Video = () => {
+    const [mediaBtn, setMediaBtn] = useState(false);
+    const [createBtn, setCreateBtn] = useState(true);
+    const [joinBtn, setJoinBtn] = useState(true);
+    const [hangupBtn, setHangupBtn] = useState(true);
+    const localVideo = useRef(null);
+    const remoteVideo = useRef(null);
+
   return (
     <div>
       <h1>Welcome to PeerDvX!</h1>
       <div id="buttons">
-        <button onClick={openUserMedia}>
+        <button disabled={mediaBtn} onClick={ evt => {
+            openUserMedia(localVideo, remoteVideo);
+            setMediaBtn(true);
+        }}>
           <span>Open camera & microphone</span>
         </button>
-        <button disabled id="createBtn">
-          <i aria-hidden="true">group_add</i>
+        <button disabled={createBtn}>
           <span>Create room</span>
         </button>
-        <button disabled id="joinBtn">
+        <button disabled={joinBtn}>
           <span>Join room</span>
         </button>
-        <button disabled id="hangupBtn">
+        <button disabled={hangupBtn}>
           <span>Hangup</span>
         </button>
       </div>
@@ -24,8 +33,8 @@ const Video = () => {
         <span id="currentRoom"></span>
       </div>
       <div id="videos">
-        <video id="localVideo" muted autoPlay playsInline></video>
-        <video id="remoteVideo" controls autoPlay playsInline></video>
+        <video ref={localVideo} muted autoPlay playsInline></video>
+        <video ref={remoteVideo} autoPlay playsInline></video>
       </div>
       <div
         id="room-dialog"
