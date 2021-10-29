@@ -8,6 +8,7 @@ const Video = () => {
   const [hangupBtn, disableHangupBtn] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [roomId, setRoomId] = useState(null);
+  const [caller, setCaller] = useState(false);
   const localVideo = useRef(null);
   const remoteVideo = useRef(null);
 
@@ -32,6 +33,7 @@ const Video = () => {
             disableCreateBtn(true);
             disableJoinBtn(true);
             disableHangupBtn(false);
+            setCaller(true);
             setRoomId(await createRoom(localVideo, remoteVideo));
           }}
         >
@@ -61,7 +63,9 @@ const Video = () => {
       </div>
       <div>
         {roomId && (
-          <span>{`Current room is ${roomId} - You are the caller!`}</span>
+          <span>{`Current room is ${roomId} - You are the ${
+            caller ? "caller" : "callee"
+          }  !`}</span>
         )}
       </div>
       <div id="videos">
@@ -100,7 +104,7 @@ const Video = () => {
                 disableCreateBtn(true);
                 disableJoinBtn(true);
                 disableHangupBtn(false);
-                setOpenDialog(false)
+                setOpenDialog(false);
               }}
             >
               <span>Join</span>
