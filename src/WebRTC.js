@@ -6,8 +6,10 @@ import {
   addDoc,
   onSnapshot,
   doc,
+  getDoc,
   getDocs,
   deleteDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -185,8 +187,9 @@ export async function joinRoom(localVideo, remoteVideo, roomId) {
   const remoteStream = remoteVideo.current.srcObject;
 
   const db = getFirestore(app);
-  const roomRef = collection(db, "rooms").doc(roomId);
-  const roomSnapshot = await roomRef.get();
+  const roomCol = collection(db, "rooms");
+  const roomRef = doc(roomCol, roomId);
+  const roomSnapshot = await getDoc(roomRef);
   console.log("Got room:", roomSnapshot.exists);
 
   if (roomSnapshot.exists) {
@@ -198,14 +201,14 @@ export async function joinRoom(localVideo, remoteVideo, roomId) {
     });
 
     // Code for collecting ICE candidates below
-    const calleeCandidatesCollection = roomRef.collection("calleeCandidates");
+    const calleeCandidatesCollection = collection(roomRef, "calleeCandidates");
     peerConnection.addEventListener("icecandidate", (event) => {
       if (!event.candidate) {
         console.log("Got final candidate!");
         return;
       }
       console.log("Got candidate: ", event.candidate);
-      calleeCandidatesCollection.add(event.candidate.toJSON());
+      addDoc(calleeCandidatesCollection, event.candidate.toJSON());
     });
     // Code for collecting ICE candidates above
 
@@ -231,11 +234,11 @@ export async function joinRoom(localVideo, remoteVideo, roomId) {
         sdp: answer.sdp,
       },
     };
-    await roomRef.update(roomWithAnswer);
+    await updateDoc(roomRef, roomWithAnswer);
     // Code for creating SDP answer above
 
     // Listening for remote ICE candidates below
-    roomRef.collection("callerCandidates").onSnapshot((snapshot) => {
+    collection(roomRef, "callerCandidates").onSnapshot((snapshot) => {
       snapshot.docChanges().forEach(async (change) => {
         if (change.type === "added") {
           let data = change.doc.data();

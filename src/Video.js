@@ -37,9 +37,12 @@ const Video = () => {
         >
           <span>Create room</span>
         </button>
-        <button disabled={joinBtn} onClick={async (evt) => {
-          setOpenDialog(true);
-        }}>
+        <button
+          disabled={joinBtn}
+          onClick={async (evt) => {
+            setOpenDialog(true);
+          }}
+        >
           <span>Join room</span>
         </button>
         <button
@@ -77,17 +80,19 @@ const Video = () => {
           <div>
             Enter ID for room to join:
             <div>
-              <input type="text" id="room-id" />
+              <input type="text" onChange={evt => {
+                console.log("### value", evt.target.value);
+                setRoomId(evt.target.value);
+              }} />
               <label htmlFor="my-text-field">Room ID</label>
-              <div></div>
             </div>
           </div>
           <footer>
-            <button onClick={evt => setOpenDialog(false)}>
+            <button onClick={(evt) => setOpenDialog(false)}>
               <span>Cancel</span>
             </button>
             <button
-              onClick={async evt => {
+              onClick={async (evt) => {
                 joinRoom(localVideo, remoteVideo, roomId);
               }}
             >
