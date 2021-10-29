@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, onSnapshot, getDoc } from  "firebase/firestore";
+import { getFirestore, collection, addDoc, onSnapshot, doc, getDocs, deleteDoc } from  "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -155,16 +155,16 @@ export async function hangUp(localVideo, remoteVideo, roomId) {
   if (roomId) {
     const db = getFirestore(app);
     const roomCol = collection(db, 'rooms');
-    const roomRef = getDoc(roomCol, roomId);
-    const calleeCandidates = await collection(roomRef, 'calleeCandidates').getDoc();
+    const roomRef = doc(roomCol, roomId);
+    const calleeCandidates = await getDocs(collection(roomRef, 'calleeCandidates'));
     calleeCandidates.forEach(async candidate => {
       await candidate.ref.delete();
     });
-    const callerCandidates = await collection(roomRef, 'callerCandidates').getDoc();
+    const callerCandidates = await getDocs(collection(roomRef, 'callerCandidates'));
     callerCandidates.forEach(async candidate => {
-      await candidate.ref.delete();
+      await deleteDoc(candidate);
     });
-    await roomRef.delete();
+    await deleteDoc(roomRef);
   }
 
   // document.location.reload(true);

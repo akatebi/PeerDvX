@@ -34,8 +34,13 @@ const Video = () => {
           <span>Join room</span>
         </button>
         <button disabled={hangupBtn} onClick={
-          evt => {
-            hangUp(localVideo, remoteVideo, roomId);
+          async evt => {
+            await hangUp(localVideo, remoteVideo, roomId);
+            setRoomId(null);
+            disableMediaBtn(false);
+            disableCreateBtn(true);
+            disableJoinBtn(true);
+            disableHangupBtn(true);
         }}>
           <span>Hangup</span>
         </button>
