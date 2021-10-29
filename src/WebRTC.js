@@ -5,6 +5,7 @@ import {
   collection,
   addDoc,
   onSnapshot,
+  query,
   doc,
   getDoc,
   getDocs,
@@ -164,13 +165,13 @@ export async function hangUp(localVideo, remoteVideo, roomId) {
     const roomCol = collection(db, "rooms");
     const roomRef = doc(roomCol, roomId);
     const calleeCandidates = await getDocs(
-      collection(roomRef, "calleeCandidates")
+      query(collection(roomRef, "calleeCandidates"))
     );
     calleeCandidates.forEach(async (candidate) => {
-      await candidate.ref.delete();
+      await deleteDoc(candidate);
     });
     const callerCandidates = await getDocs(
-      collection(roomRef, "callerCandidates")
+      query(collection(roomRef, "callerCandidates"))
     );
     callerCandidates.forEach(async (candidate) => {
       await deleteDoc(candidate);
@@ -238,7 +239,8 @@ export async function joinRoom(localVideo, remoteVideo, roomId) {
     // Code for creating SDP answer above
 
     // Listening for remote ICE candidates below
-    collection(roomRef, "callerCandidates").onSnapshot((snapshot) => {
+    const callerCandidates = collection(roomRef, "callerCandidates");
+    onSnapshot(callerCandidates, (snapshot) => {
       snapshot.docChanges().forEach(async (change) => {
         if (change.type === "added") {
           let data = change.doc.data();

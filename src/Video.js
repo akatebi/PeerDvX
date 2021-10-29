@@ -80,10 +80,13 @@ const Video = () => {
           <div>
             Enter ID for room to join:
             <div>
-              <input type="text" onChange={evt => {
-                console.log("### value", evt.target.value);
-                setRoomId(evt.target.value);
-              }} />
+              <input
+                type="text"
+                onChange={(evt) => {
+                  console.log("### value", evt.target.value);
+                  setRoomId(evt.target.value);
+                }}
+              />
               <label htmlFor="my-text-field">Room ID</label>
             </div>
           </div>
