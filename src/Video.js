@@ -32,7 +32,7 @@ const Video = () => {
             disableCreateBtn(true);
             disableJoinBtn(true);
             disableHangupBtn(false);
-            setRoomId(await createRoom(localVideo));
+            setRoomId(await createRoom(localVideo, remoteVideo));
           }}
         >
           <span>Create room</span>
@@ -87,9 +87,9 @@ const Video = () => {
               <span>Cancel</span>
             </button>
             <button
-              id="confirmJoinBtn"
-              type="button"
-              data-mdc-dialog-action="yes"
+              onClick={async evt => {
+                joinRoom(localVideo, remoteVideo, roomId);
+              }}
             >
               <span>Join</span>
             </button>
