@@ -168,13 +168,13 @@ export async function hangUp(localVideo, remoteVideo, roomId) {
       query(collection(roomRef, "calleeCandidates"))
     );
     calleeCandidates.forEach(async (candidate) => {
-      await deleteDoc(candidate);
+      await deleteDoc(candidate.ref);
     });
     const callerCandidates = await getDocs(
       query(collection(roomRef, "callerCandidates"))
     );
     callerCandidates.forEach(async (candidate) => {
-      await deleteDoc(candidate);
+      await deleteDoc(candidate.ref);
     });
     await deleteDoc(roomRef);
   }
