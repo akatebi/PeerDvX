@@ -97,6 +97,10 @@ const Video = () => {
             <button
               onClick={async (evt) => {
                 joinRoom(localVideo, remoteVideo, roomId);
+                disableCreateBtn(true);
+                disableJoinBtn(true);
+                disableHangupBtn(false);
+                setOpenDialog(false)
               }}
             >
               <span>Join</span>
