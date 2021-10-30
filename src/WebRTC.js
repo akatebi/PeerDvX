@@ -191,8 +191,12 @@ export async function joinRoom(localVideo, remoteVideo, roomId) {
   const roomCol = collection(db, "rooms");
   const roomRef = doc(roomCol, roomId);
   const roomSnapshot = await getDoc(roomRef);
-  console.log("Got room:", roomSnapshot.exists);
-
+  
+  if (!roomSnapshot.data()) {
+    return false;
+  }
+  
+  console.log("Got room:", roomSnapshot.data());
   if (roomSnapshot.exists) {
     console.log("Create PeerConnection with configuration: ", configuration);
     peerConnection = new RTCPeerConnection(configuration);
@@ -251,6 +255,8 @@ export async function joinRoom(localVideo, remoteVideo, roomId) {
     });
     // Listening for remote ICE candidates above
   }
+  
+  return true;
 }
 
 /////////////////////////////////////////////////////////////////////

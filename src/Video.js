@@ -74,7 +74,7 @@ const Video = () => {
         aria-modal="true"
         aria-labelledby="my-dialog-title"
         aria-describedby="my-dialog-content"
-        style={{position: "relative", zIndex:"1"}}
+        style={{ position: "relative", zIndex: "1" }}
       >
         <dialog open={openDialog}>
           <h2>Join room</h2>
@@ -92,15 +92,22 @@ const Video = () => {
             </div>
           </div>
           <footer>
-            <button onClick={(evt) => setOpenDialog(false)}>
+            <button
+              onClick={(evt) => {
+                setOpenDialog(false);
+                setRoomId(null);
+              }}
+            >
               <span>Cancel</span>
             </button>
             <button
               onClick={async (evt) => {
-                joinRoom(localVideo, remoteVideo, roomId);
-                disableCreateBtn(true);
-                disableJoinBtn(true);
-                disableHangupBtn(false);
+                if (roomId && await joinRoom(localVideo, remoteVideo, roomId)) {
+                  disableCreateBtn(true);
+                  disableJoinBtn(true);
+                  disableHangupBtn(false);
+                }
+                setRoomId(null);
                 setOpenDialog(false);
               }}
             >
