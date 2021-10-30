@@ -102,7 +102,7 @@ export async function createRoom(localVideo, remoteVideo) {
     },
   };
   const roomRef = await addDoc(roomCol, roomWithOffer);
-  const roomId = roomRef.id
+  const roomId = roomRef.id;
   console.log(`New room created with SDP offer. Room ID: ${roomRef.id}`);
   // Code for creating a room above
 
@@ -190,11 +190,11 @@ export async function joinRoom(localVideo, remoteVideo, roomId) {
   const roomRef = doc(roomCol, roomId);
   const roomSnapshot = await getDoc(roomRef);
   let peerConnection = null;
-  
+
   if (!roomSnapshot.data()) {
     return peerConnection;
   }
-  
+
   console.log("Got room:", roomSnapshot.data());
   if (roomSnapshot.exists) {
     console.log("Create PeerConnection with configuration: ", configuration);
@@ -262,25 +262,24 @@ export async function joinRoom(localVideo, remoteVideo, roomId) {
 /////////////////////////////////////////////////////////////////////
 
 export function registerPeerConnectionListeners(peerConnection) {
-  peerConnection.addEventListener("icegatheringstatechange", () => {
-    console.log(
-      `ICE gathering state changed: ${peerConnection.iceGatheringState}`
-    );
-  });
-
-  peerConnection.addEventListener("connectionstatechange", () => {
-    console.log(`Connection state change: ${peerConnection.connectionState}`);
-  });
-
-  peerConnection.addEventListener("signalingstatechange", () => {
-    console.log(`Signaling state change: ${peerConnection.signalingState}`);
-  });
-
-  peerConnection.addEventListener("iceconnectionstatechange ", () => {
-    console.log(
-      `ICE connection state change: ${peerConnection.iceConnectionState}`
-    );
-  });
+  const {
+    iceGatheringState,
+    connectionState,
+    signalingState,
+    iceConnectionState,
+  } = peerConnection;
+  peerConnection.addEventListener("icegatheringstatechange", () =>
+    console.log(`ICE gathering state changed: ${iceGatheringState}`)
+  );
+  peerConnection.addEventListener("connectionstatechange", () =>
+    console.log(`Connection state change: ${connectionState}`)
+  );
+  peerConnection.addEventListener("signalingstatechange", () =>
+    console.log(`Signaling state change: ${signalingState}`)
+  );
+  peerConnection.addEventListener("iceconnectionstatechange ", () =>
+    console.log(`ICE connection state change: ${iceConnectionState}`)
+  );
 }
 
 /////////////////////////////////////////////////////////////////////
