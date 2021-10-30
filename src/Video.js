@@ -68,16 +68,13 @@ const Video = () => {
           }  !`}</span>
         )}
       </div>
-      <div id="videos">
-        <video ref={localVideo} muted autoPlay playsInline></video>
-        <video ref={remoteVideo} autoPlay playsInline></video>
-      </div>
       <div
         id="room-dialog"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="my-dialog-title"
         aria-describedby="my-dialog-content"
+        style={{position: "relative", zIndex:"1"}}
       >
         <dialog open={openDialog}>
           <h2>Join room</h2>
@@ -111,6 +108,10 @@ const Video = () => {
             </button>
           </footer>
         </dialog>
+      </div>
+      <div id="videos">
+        <video ref={localVideo} muted autoPlay playsInline></video>
+        <video ref={remoteVideo} autoPlay playsInline></video>
       </div>
     </div>
   );
