@@ -38,8 +38,6 @@ const configuration = {
   iceCandidatePoolSize: 10,
 };
 
-let peerConnection = null;
-
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
@@ -71,9 +69,9 @@ export async function createRoom(localVideo, remoteVideo) {
   const roomCol = collection(db, "rooms");
 
   console.log("Create PeerConnection with configuration: ", configuration);
-  peerConnection = new RTCPeerConnection(configuration);
+  const peerConnection = new RTCPeerConnection(configuration);
 
-  registerPeerConnectionListeners();
+  registerPeerConnectionListeners(peerConnection);
 
   localStream.getTracks().forEach((track) => {
     peerConnection.addTrack(track, localStream);
@@ -104,7 +102,7 @@ export async function createRoom(localVideo, remoteVideo) {
     },
   };
   const roomRef = await addDoc(roomCol, roomWithOffer);
-  const roomId = roomRef.id;
+  const roomId = roomRef.id
   console.log(`New room created with SDP offer. Room ID: ${roomRef.id}`);
   // Code for creating a room above
 
@@ -140,13 +138,13 @@ export async function createRoom(localVideo, remoteVideo) {
   });
   // Listen for remote ICE candidates above
 
-  return roomId;
+  return { peerConnection, roomId };
 }
 
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
-export async function hangUp(localVideo, remoteVideo, roomId) {
+export async function hangUp(localVideo, remoteVideo, roomId, peerConnection) {
   const localStream = localVideo.current.srcObject;
   const remoteStream = remoteVideo.current.srcObject;
 
@@ -191,16 +189,17 @@ export async function joinRoom(localVideo, remoteVideo, roomId) {
   const roomCol = collection(db, "rooms");
   const roomRef = doc(roomCol, roomId);
   const roomSnapshot = await getDoc(roomRef);
+  let peerConnection = null;
   
   if (!roomSnapshot.data()) {
-    return false;
+    return peerConnection;
   }
   
   console.log("Got room:", roomSnapshot.data());
   if (roomSnapshot.exists) {
     console.log("Create PeerConnection with configuration: ", configuration);
     peerConnection = new RTCPeerConnection(configuration);
-    registerPeerConnectionListeners();
+    registerPeerConnectionListeners(peerConnection);
     localStream.getTracks().forEach((track) => {
       peerConnection.addTrack(track, localStream);
     });
@@ -255,14 +254,14 @@ export async function joinRoom(localVideo, remoteVideo, roomId) {
     });
     // Listening for remote ICE candidates above
   }
-  
-  return true;
+
+  return peerConnection;
 }
 
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
-export function registerPeerConnectionListeners() {
+export function registerPeerConnectionListeners(peerConnection) {
   peerConnection.addEventListener("icegatheringstatechange", () => {
     console.log(
       `ICE gathering state changed: ${peerConnection.iceGatheringState}`

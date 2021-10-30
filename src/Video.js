@@ -7,6 +7,7 @@ const Video = () => {
   const [joinBtn, disableJoinBtn] = useState(true);
   const [hangupBtn, disableHangupBtn] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
+  const [peerConnection, setPeerConnection] = useState(null);
   const [roomId, setRoomId] = useState(null);
   const [caller, setCaller] = useState(false);
   const localVideo = useRef(null);
@@ -25,7 +26,7 @@ const Video = () => {
             disableJoinBtn(false);
           }}
         >
-          <span>Open camera & microphone</span>
+          <span>Camera & Microphone</span>
         </button>
         <button
           disabled={createBtn}
@@ -34,7 +35,9 @@ const Video = () => {
             disableJoinBtn(true);
             disableHangupBtn(false);
             setCaller(true);
-            setRoomId(await createRoom(localVideo, remoteVideo));
+            const { peerConnection, roomId } = await createRoom(localVideo, remoteVideo);
+            setPeerConnection(peerConnection);
+            setRoomId(roomId);
           }}
         >
           <span>Create room</span>
@@ -50,7 +53,7 @@ const Video = () => {
         <button
           disabled={hangupBtn}
           onClick={async (evt) => {
-            await hangUp(localVideo, remoteVideo, roomId);
+            await hangUp(localVideo, remoteVideo, roomId, peerConnection);
             setRoomId(null);
             disableMediaBtn(false);
             disableCreateBtn(true);
@@ -102,7 +105,9 @@ const Video = () => {
             </button>
             <button
               onClick={async (evt) => {
-                if (roomId && await joinRoom(localVideo, remoteVideo, roomId)) {
+                const pc = await joinRoom(localVideo, remoteVideo, roomId);
+                setPeerConnection(pc);
+                if (roomId && pc) {
                   disableCreateBtn(true);
                   disableJoinBtn(true);
                   disableHangupBtn(false);
