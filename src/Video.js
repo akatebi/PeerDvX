@@ -13,6 +13,21 @@ const Video = () => {
   const localVideo = useRef(null);
   const remoteVideo = useRef(null);
 
+  const join = async evt => {
+    const pc = await joinRoom(localVideo, remoteVideo, roomId);
+    setPeerConnection(pc);
+    if (roomId && pc) {
+      disableCreateBtn(true);
+      disableJoinBtn(true);
+      disableHangupBtn(false);
+    } else {
+      disableCreateBtn(false);
+      disableJoinBtn(false);
+    }
+    setRoomId(null);
+    setOpenDialog(false);
+  };
+
   return (
     <div>
       <h1>Welcome to PeerDvX!</h1>
@@ -57,6 +72,7 @@ const Video = () => {
           onClick={async (evt) => {
             await hangUp(localVideo, remoteVideo, roomId, peerConnection);
             setRoomId(null);
+            setCaller(false);
             disableMediaBtn(false);
             disableCreateBtn(true);
             disableJoinBtn(true);
@@ -90,6 +106,11 @@ const Video = () => {
                   console.log("### value", evt.target.value);
                   setRoomId(evt.target.value);
                 }}
+                onKeyDown={evt => {
+                  if (evt.key === "Enter") {
+                    join(evt);
+                  }
+                }}
               />
               <label htmlFor="my-text-field">Room ID</label>
             </div>
@@ -105,22 +126,7 @@ const Video = () => {
             >
               <span>Cancel</span>
             </button>
-            <button
-              onClick={async (evt) => {
-                const pc = await joinRoom(localVideo, remoteVideo, roomId);
-                setPeerConnection(pc);
-                if (roomId && pc) {
-                  disableCreateBtn(true);
-                  disableJoinBtn(true);
-                  disableHangupBtn(false);
-                } else {
-                  disableCreateBtn(true);
-                  disableJoinBtn(true);
-                }
-                setRoomId(null);
-                setOpenDialog(false);
-              }}
-            >
+            <button onClick={join}>
               <span>Join</span>
             </button>
           </footer>
