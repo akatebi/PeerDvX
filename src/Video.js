@@ -46,6 +46,8 @@ const Video = () => {
           disabled={joinBtn}
           onClick={async (evt) => {
             setOpenDialog(true);
+            disableCreateBtn(true);
+            disableJoinBtn(true);
           }}
         >
           <span>Join room</span>
@@ -99,6 +101,8 @@ const Video = () => {
               onClick={(evt) => {
                 setOpenDialog(false);
                 setRoomId(null);
+                disableCreateBtn(false);
+                disableJoinBtn(false);
               }}
             >
               <span>Cancel</span>
@@ -111,6 +115,9 @@ const Video = () => {
                   disableCreateBtn(true);
                   disableJoinBtn(true);
                   disableHangupBtn(false);
+                } else {
+                  disableCreateBtn(true);
+                  disableJoinBtn(true);
                 }
                 setRoomId(null);
                 setOpenDialog(false);
