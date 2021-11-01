@@ -67,10 +67,8 @@ const Video = () => {
         </button>
       </div>
       <div>
-        {roomId && (
-          <span>{`Current room is ${roomId} - You are the ${
-            caller ? "caller" : "callee"
-          }  !`}</span>
+        {roomId && caller && (
+          <span>{`Current room is ${roomId} - You are the caller!`}</span>
         )}
       </div>
       <div
